@@ -1,0 +1,15 @@
+Description: Model serving
+Engine: gotpl
+Home: https://kuberlab.com
+Keywords:
+- kuberlab
+- serving
+- ml-serving
+- kibernetika
+- openvino
+Maintainers:
+- Email: support@kuberlab.com
+  Name: kuberlab
+Name: model-serving
+Type: mlapp-v2
+Version: 1.0.0
