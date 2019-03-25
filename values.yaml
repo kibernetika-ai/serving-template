@@ -1,0 +1,29 @@
+
+storage:
+ value: default
+ wizard:
+   name: "Storage Configuration"
+   kind: cluster_storage
+
+
+src:
+  value: https://github.com/kibernetika-ai/serving-template
+  accountId: ''
+  revision: ''
+  wizard:
+    name: "Source Code"
+    kind: git
+
+use_openvino:
+  value: false
+  wizard:
+    name: 'Use OpenVINO'
+    kind: boolean
+
+model:
+ value: ''
+ version: ''
+ workspace: ''
+ wizard:
+   name: "Pre trained model"
+   kind: model

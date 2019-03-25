@@ -1,0 +1,148 @@
+kind: MLApp
+metadata:
+  name: model-serving
+spec:
+  default_mount_path: /notebooks
+  default_read_only: false
+  package_manager: pip3
+  packages:
+  - manager: pip3
+  tasks:
+  - name: run-serving-hook
+    resources:
+    - command: python run_hook.py
+      default_volume_mapping: true
+      images:
+        {{- if .use_openvino }}
+        cpu: kuberlab/serving:latest-openvino
+        gpu: kuberlab/serving:latest-openvino-gpu
+        {{- else }}
+        cpu: kuberlab/serving:latest
+        gpu: kuberlab/serving:latest-gpu
+        {{- end }}
+      name: worker
+      replicas: 1
+      resources:
+        limits:
+          cpu: "2"
+          memory: 8Gi
+        requests:
+          cpu: 100m
+          memory: 64Mi
+      restartPolicy: Never
+      workDir: $SRC_DIR
+  - name: test-serving
+    resources:
+    - command: python3 classifier_train.py TRAIN $TRAINING_DIR/aligned-images --model $FACENET_DIR/facenet.xml --classifier $TRAINING_DIR/classifier.pkl --driver openvino --device CPU
+      default_volume_mapping: true
+      images:
+        {{- if .use_openvino }}
+        cpu: kuberlab/serving:latest-openvino
+        gpu: kuberlab/serving:latest-openvino-gpu
+        {{- else }}
+        cpu: kuberlab/serving:latest
+        gpu: kuberlab/serving:latest-gpu
+        {{- end }}
+      name: worker
+      replicas: 1
+      resources:
+        limits:
+          cpu: "2"
+          memory: 8Gi
+        requests:
+          cpu: 100m
+          memory: 64Mi
+      restartPolicy: Never
+      workDir: $SRC_DIR
+  uix:
+  - default_volume_mapping: true
+    displayName: Jupyter
+    images:
+      {{- if .use_openvino }}
+      cpu: kuberlab/serving:latest-openvino
+      gpu: kuberlab/serving:latest-openvino-gpu
+      {{- else }}
+      cpu: kuberlab/serving:latest
+      gpu: kuberlab/serving:latest-gpu
+      {{- end }}
+    name: jupyter
+    ports:
+    - name: http
+      port: 8888
+      protocol: TCP
+      targetPort: 8888
+    resources:
+      limits:
+        cpu: "1"
+        memory: 4Gi
+      requests:
+        cpu: 100m
+        memory: 64Mi
+  serving:
+  - name: serving
+    displayName: Test Serving
+    images:
+      {{- if .use_openvino }}
+      cpu: kuberlab/serving:latest-openvino
+      gpu: kuberlab/serving:latest-openvino-gpu
+      {{- else }}
+      cpu: kuberlab/serving:latest
+      gpu: kuberlab/serving:latest-gpu
+      {{- end }}
+    command: >-
+      kserving --driver null --model-path any --hooks hook.py
+    resources:
+      accelerators:
+        gpu: 0
+      requests:
+        cpu: 200m
+        memory: 256M
+      limits:
+        cpu: 4000m
+        memory: 4Gi
+    spec:
+      rawInput: true
+      model: any
+    workDir: $SRC_DIR
+    sources:
+    - gitRepo:
+        repository: {{ gitRepo .src.value }}
+        accountId: '{{ .src.accountId }}'
+        revision: '{{ .src.revision }}'
+      name: src
+      subPath: {{ gitSubPath .src.value }}/src
+    - name: model
+      model:
+        workspace: {{ .model.workspace }}
+        model: {{ .model.value }}
+        version: {{ .model.version }}
+    ports:
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+      name: http
+  volumes:
+  - clusterStorage: '{{ .storage.value }}'
+    name: training
+  - gitRepo:
+      repository: {{ gitRepo .src.value }}
+      accountId: '{{ .src.accountId }}'
+      revision: '{{ .src.revision }}'
+    name: src
+    subPath: {{ gitSubPath .src.value }}/src
+  - clusterStorage: '{{ .storage.value }}'
+    isLibDir: true
+    name: lib
+  - clusterStorage: '{{ .storage.value }}'
+    mountPath: /notebooks
+    name: code
+    subPath: code
+  - name: model
+    {{ if .model.value }}
+    model:
+      workspace: {{ .model.workspace }}
+      model: {{ .model.value }}
+      version: {{ .model.version }}
+    {{- else}}
+    clusterStorage: '{{ .storage.value }}'
+    {{- end }}
