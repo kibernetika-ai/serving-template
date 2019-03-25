@@ -65,6 +65,7 @@ spec:
       cpu: kuberlab/serving:latest
       gpu: kuberlab/serving:latest-gpu
       {{- end }}
+    command: cd /notebooks && /run_jupyter.sh --allow-root
     name: jupyter
     ports:
     - name: http
