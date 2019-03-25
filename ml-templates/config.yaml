@@ -13,7 +13,7 @@ spec:
     - command: python run_hook.py
       default_volume_mapping: true
       images:
-        {{- if .use_openvino }}
+        {{- if .use_openvino.value }}
         cpu: kuberlab/serving:latest-openvino
         gpu: kuberlab/serving:latest-openvino-gpu
         {{- else }}
@@ -36,7 +36,7 @@ spec:
     - command: python3 classifier_train.py TRAIN $TRAINING_DIR/aligned-images --model $FACENET_DIR/facenet.xml --classifier $TRAINING_DIR/classifier.pkl --driver openvino --device CPU
       default_volume_mapping: true
       images:
-        {{- if .use_openvino }}
+        {{- if .use_openvino.value }}
         cpu: kuberlab/serving:latest-openvino
         gpu: kuberlab/serving:latest-openvino-gpu
         {{- else }}
@@ -58,7 +58,7 @@ spec:
   - default_volume_mapping: true
     displayName: Jupyter
     images:
-      {{- if .use_openvino }}
+      {{- if .use_openvino.value }}
       cpu: kuberlab/serving:latest-openvino
       gpu: kuberlab/serving:latest-openvino-gpu
       {{- else }}
@@ -83,7 +83,7 @@ spec:
   - name: serving
     displayName: Test Serving
     images:
-      {{- if .use_openvino }}
+      {{- if .use_openvino.value }}
       cpu: kuberlab/serving:latest-openvino
       gpu: kuberlab/serving:latest-openvino-gpu
       {{- else }}
