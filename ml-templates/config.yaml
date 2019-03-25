@@ -31,29 +31,29 @@ spec:
           memory: 64Mi
       restartPolicy: Never
       workDir: $SRC_DIR
-  - name: test-serving
-    resources:
-    - command: python3 classifier_train.py TRAIN $TRAINING_DIR/aligned-images --model $FACENET_DIR/facenet.xml --classifier $TRAINING_DIR/classifier.pkl --driver openvino --device CPU
-      default_volume_mapping: true
-      images:
-        {{- if .use_openvino.value }}
-        cpu: kuberlab/serving:latest-openvino
-        gpu: kuberlab/serving:latest-openvino-gpu
-        {{- else }}
-        cpu: kuberlab/serving:latest
-        gpu: kuberlab/serving:latest-gpu
-        {{- end }}
-      name: worker
-      replicas: 1
-      resources:
-        limits:
-          cpu: "2"
-          memory: 8Gi
-        requests:
-          cpu: 100m
-          memory: 64Mi
-      restartPolicy: Never
-      workDir: $SRC_DIR
+#  - name: test-serving
+#    resources:
+#    - command: python3 classifier_train.py TRAIN $TRAINING_DIR/aligned-images --model $FACENET_DIR/facenet.xml --classifier $TRAINING_DIR/classifier.pkl --driver openvino --device CPU
+#      default_volume_mapping: true
+#      images:
+#        {{- if .use_openvino.value }}
+#        cpu: kuberlab/serving:latest-openvino
+#        gpu: kuberlab/serving:latest-openvino-gpu
+#        {{- else }}
+#        cpu: kuberlab/serving:latest
+#        gpu: kuberlab/serving:latest-gpu
+#        {{- end }}
+#      name: worker
+#      replicas: 1
+#      resources:
+#        limits:
+#          cpu: "2"
+#          memory: 8Gi
+#        requests:
+#          cpu: 100m
+#          memory: 64Mi
+#      restartPolicy: Never
+#      workDir: $SRC_DIR
   uix:
   - default_volume_mapping: true
     displayName: Jupyter
